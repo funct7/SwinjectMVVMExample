@@ -32,7 +32,7 @@ public final class ImageDetailViewModel: ImageDetailViewModeling {
     internal var locale = Locale.current // For testing.
     fileprivate var imageEntities = [ImageEntity]()
     fileprivate var currentImageIndex = 0
-    fileprivate var stop = MutableProperty<Void>()
+    fileprivate var stop = MutableProperty(Void())
     
     fileprivate let network: Networking
     fileprivate let externalAppChannel: ExternalAppChanneling
@@ -56,7 +56,7 @@ public final class ImageDetailViewModel: ImageDetailViewModeling {
 extension ImageDetailViewModel: ImageDetailViewModelModifiable {
     public func update(_ imageEntities: [ImageEntity], atIndex index: Int) {
         stop.value = ()
-        stop = MutableProperty<Void>()
+        stop = MutableProperty(Void())
         
         self.imageEntities = imageEntities
         currentImageIndex = index
@@ -75,7 +75,7 @@ extension ImageDetailViewModel: ImageDetailViewModelModifiable {
             _image <~ network.requestImage(imageEntity.imageURL)
                 .take(until: stop.producer.skip(first: 1))
                 .map { $0 as UIImage? }
-                .flatMapError { _ in SignalProducer<UIImage?, NoError>(value: nil) }
+                .flatMapError { _ in SignalProducer<UIImage?, Never>(value: nil) }
                 .observe(on: UIScheduler())
         }
     }

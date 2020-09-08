@@ -39,16 +39,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         // Views
-        container.registerForStoryboard(ImageSearchTableViewController.self) { r, c in
+        container.storyboardInitCompleted(ImageSearchTableViewController.self) { r, c in
             c.viewModel = r.resolve(ImageSearchTableViewModeling.self)!
         }
-        container.registerForStoryboard(ImageDetailViewController.self) { r, c in
+        container.storyboardInitCompleted(ImageDetailViewController.self) { r, c in
             c.viewModel = r.resolve(ImageDetailViewModeling.self)!
         }
     }
 
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         let window = UIWindow(frame: UIScreen.main.bounds)
         window.backgroundColor = UIColor.white
         window.makeKeyAndVisible()

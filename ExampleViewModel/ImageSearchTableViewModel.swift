@@ -22,7 +22,7 @@ public final class ImageSearchTableViewModel: ImageSearchTableViewModeling {
     /// Accepts property injection.
     public var imageDetailViewModel: ImageDetailViewModelModifiable?
     
-    public var loadNextPage: Action<(), (), NoError> {
+    public var loadNextPage: Action<Void, Void, Never> {
         return Action(enabledIf: nextPageLoadable) { _ in
             return SignalProducer { observer, disposable in
                 if let observer = self.nextPageTrigger.value {
@@ -57,7 +57,7 @@ public final class ImageSearchTableViewModel: ImageSearchTableViewModeling {
         }
         
         _searching.value = true
-        nextPageTrigger.value = MutableProperty()
+        nextPageTrigger.value = MutableProperty(Void())
         let trigger = nextPageTrigger.value!.producer.skip(first: 1)
 
         imageSearch.searchImages(nextPageTrigger: trigger)

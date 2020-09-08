@@ -997,7 +997,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "script/mergegenstrings.py ExampleViewModel LocalizedString";
+			shellScript = "python2 script/mergegenstrings.py ExampleViewModel LocalizedString\n";
 		};
 		9866B9571B8DB25D007A5C43 /* Run Script for Localization */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1011,7 +1011,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "script/mergegenstrings.py ExampleView LocalizedString";
+			shellScript = "python2 script/mergegenstrings.py ExampleView LocalizedString\n";
 		};
 		987CBD861B8DB147000C1B5E /* Run Script for Localization */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1025,7 +1025,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "script/mergegenstrings.py ExampleModel LocalizedString";
+			shellScript = "python2 script/mergegenstrings.py ExampleModel LocalizedString\n";
 		};
 		98B48E181B872F4300843AD7 /* Run Script for Frameworks by Carthage */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1046,7 +1046,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks";
+			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1287,7 +1287,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -1329,7 +1329,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";

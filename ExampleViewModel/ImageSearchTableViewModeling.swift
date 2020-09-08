@@ -15,7 +15,7 @@ public protocol ImageSearchTableViewModeling {
     var errorMessage: Property<String?> { get }
     
     func startSearch()
-    var loadNextPage: Action<(), (), NoError> { get }
+    var loadNextPage: Action<Void, Void, Never> { get }
     
     func selectCellAtIndex(_ index: Int)
 }

@@ -18,7 +18,7 @@ extension ResponseEntity: Decodable {
     public static func decode(_ e: Extractor) throws -> ResponseEntity {
         return try ResponseEntity(
             totalCount: e <| "totalHits",
-            images: e <|| "hits"
+            images: e <| "hits"
         )
     }
 }

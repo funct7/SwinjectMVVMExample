@@ -34,8 +34,7 @@ public struct ImageEntity {
 extension ImageEntity: Decodable {
     public static func decode(_ e: Extractor) throws -> ImageEntity {
         let splitCSV: (String) -> [String] = { csv in
-            csv.characters
-                .split { $0 == "," }
+            csv.split { $0 == "," }
                 .map { String($0).trimmingCharacters(in: .whitespaces) }
         }
         

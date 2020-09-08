@@ -21,8 +21,8 @@ class ImageSearchTableViewCellSpec: QuickSpec {
         
         var getPreviewImageStarted = false
         
-        func getPreviewImage() -> SignalProducer<UIImage?, NoError> {
-            return SignalProducer<UIImage?, NoError> { observer, _ in
+        func getPreviewImage() -> SignalProducer<UIImage?, Never> {
+            return SignalProducer<UIImage?, Never> { observer, _ in
                 self.getPreviewImageStarted = true
                 observer.sendCompleted()
             }

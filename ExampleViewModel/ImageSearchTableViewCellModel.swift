@@ -32,16 +32,16 @@ public final class ImageSearchTableViewCellModel: NSObject, ImageSearchTableView
         super.init()
     }
     
-    public func getPreviewImage() -> SignalProducer<UIImage?, NoError> {
+    public func getPreviewImage() -> SignalProducer<UIImage?, Never> {
         if let previewImage = self.previewImage {
             return SignalProducer(value: previewImage).observe(on: UIScheduler())
         }
         else {
             let imageProducer = network.requestImage(previewURL)
-                .take(until: self.reactive.lifetime.ended)
+                .take(during: self.reactive.lifetime)
                 .on(value: { self.previewImage = $0 })
                 .map { $0 as UIImage? }
-                .flatMapError { _ in SignalProducer<UIImage?, NoError>(value: nil) }
+                .flatMapError { _ in SignalProducer<UIImage?, Never>(value: nil) }
             
             return SignalProducer(value: nil)
                 .concat(imageProducer)

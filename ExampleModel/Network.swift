@@ -16,8 +16,8 @@ public final class Network: Networking {
     
     public func requestJSON(_ url: String, parameters: [String : AnyObject]?) -> SignalProducer<Any, NetworkError> {
         return SignalProducer { observer, disposable in
-            Alamofire.request(url, method: .get, parameters: parameters)
-                .response(queue: self.queue, responseSerializer: Alamofire.DataRequest.jsonResponseSerializer()) { response in
+            AF.request(url, method: .get, parameters: parameters)
+                .responseJSON(queue: self.queue) { response in
                     switch response.result {
                     case .success(let value):
                         observer.send(value: value)
@@ -31,8 +31,8 @@ public final class Network: Networking {
     
     public func requestImage(_ url: String) -> SignalProducer<UIImage, NetworkError> {
         return SignalProducer { observer, disposable in
-            Alamofire.request(url, method: .get)
-                .response(queue: self.queue, responseSerializer: Alamofire.DataRequest.dataResponseSerializer()) { response in
+            AF.request(url, method: .get)
+                .responseData(queue: self.queue) { response in
                     switch response.result {
                     case .success(let data):
                         guard let image = UIImage(data: data) else {

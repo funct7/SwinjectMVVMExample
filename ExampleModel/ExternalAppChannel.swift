@@ -12,7 +12,7 @@ public final class ExternalAppChannel: ExternalAppChanneling {
     
     public func openURL(_ url: String) {
         if let url = URL(string: url) {
-            UIApplication.shared.openURL(url)
+            UIApplication.shared.open(url)
         }
     }
 }

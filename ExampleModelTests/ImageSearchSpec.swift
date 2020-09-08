@@ -155,7 +155,7 @@ class ImageSearchSpec: QuickSpec {
                     expect(mockNetwork.passedParameters?["page"] as? Int).toEventually(equal(1))
                 }
                 it("increments page by nextPageTrigger") {
-                    let trigger = SignalProducer<(), NoError>(value: ()) // Trigger once.
+                    let trigger = SignalProducer<Void, Never>(value: ()) // Trigger once.
                     search.searchImages(nextPageTrigger: trigger).start()
                     expect(mockNetwork.passedParameters?["page"] as? Int).toEventually(equal(2))
                 }
@@ -167,7 +167,7 @@ class ImageSearchSpec: QuickSpec {
                 beforeEach {
                     network = CountConfigurableStubNetwork()
                     search = ImageSearch(network: network)
-                    nextPageTrigger = MutableProperty()
+                    nextPageTrigger = MutableProperty(Void())
                 }
                 
                 it("sends completed when newly found images are less than the max number of images per page.") {

@@ -10,5 +10,5 @@ import ReactiveSwift
 import Result
 
 public protocol ImageSearching {
-    func searchImages(nextPageTrigger trigger: SignalProducer<(), NoError>) -> SignalProducer<ResponseEntity, NetworkError>
+    func searchImages(nextPageTrigger trigger: SignalProducer<Void, Never>) -> SignalProducer<ResponseEntity, NetworkError>
 }

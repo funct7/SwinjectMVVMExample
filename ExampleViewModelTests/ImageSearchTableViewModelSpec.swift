@@ -16,7 +16,7 @@ import Result
 class ImageSearchTableViewModelSpec: QuickSpec {
     // MARK: Stub
     class StubImageSearch: ImageSearching {
-        func searchImages(nextPageTrigger trigger: SignalProducer<(), NoError>) -> SignalProducer<ResponseEntity, NetworkError> {
+        func searchImages(nextPageTrigger trigger: SignalProducer<Void, Never>) -> SignalProducer<ResponseEntity, NetworkError> {
             return SignalProducer { observer, disposable in
                 observer.send(value: dummyResponse)
                 observer.sendCompleted()
@@ -26,7 +26,7 @@ class ImageSearchTableViewModelSpec: QuickSpec {
     }
 
     class NotCompletingStubImageSearch: ImageSearching {
-        func searchImages(nextPageTrigger trigger: SignalProducer<(), NoError>) -> SignalProducer<ResponseEntity, NetworkError> {
+        func searchImages(nextPageTrigger trigger: SignalProducer<Void, Never>) -> SignalProducer<ResponseEntity, NetworkError> {
             return SignalProducer { observer, disposable in
                 observer.send(value: dummyResponse)
             }
@@ -35,7 +35,7 @@ class ImageSearchTableViewModelSpec: QuickSpec {
     }
     
     class ErrorStubImageSearch: ImageSearching {
-        func searchImages(nextPageTrigger trigger: SignalProducer<(), NoError>) -> SignalProducer<ResponseEntity, NetworkError> {
+        func searchImages(nextPageTrigger trigger: SignalProducer<Void, Never>) -> SignalProducer<ResponseEntity, NetworkError> {
             return SignalProducer { observer, disposable in
                 observer.send(error: NetworkError.Unknown)
             }
@@ -57,7 +57,7 @@ class ImageSearchTableViewModelSpec: QuickSpec {
     class MockImageSearch: ImageSearching {
         var nextPageTriggered = false
 
-        func searchImages(nextPageTrigger trigger: SignalProducer<(), NoError>) -> SignalProducer<ResponseEntity, NetworkError> {
+        func searchImages(nextPageTrigger trigger: SignalProducer<Void, Never>) -> SignalProducer<ResponseEntity, NetworkError> {
             trigger.on(value: { _ in self.nextPageTriggered = true }).start()
             
             return SignalProducer { observer, disposable in

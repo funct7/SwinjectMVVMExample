@@ -17,9 +17,9 @@ public final class ImageSearch: ImageSearching {
         self.network = network
     }
     
-    public func searchImages(nextPageTrigger trigger: SignalProducer<(), NoError>) -> SignalProducer<ResponseEntity, NetworkError> {
+    public func searchImages(nextPageTrigger trigger: SignalProducer<Void, Never>) -> SignalProducer<ResponseEntity, NetworkError> {
         return SignalProducer { observer, disposable in
-            let firstSearch = SignalProducer<(), NoError>(value: ())
+            let firstSearch = SignalProducer<Void, Never>(value: ())
             let load = firstSearch.concat(trigger)
             var parameters = Pixabay.requestParameters
             var loadedImageCount: Int64 = 0
@@ -31,7 +31,7 @@ public final class ImageSearch: ImageSearching {
                         case .value(let json):
                             if let response = try? ResponseEntity.decodeValue(json) {
                                 observer.send(value: response)
-                                loadedImageCount += response.images.count
+                                loadedImageCount += Int64(response.images.count)
                                 if response.totalCount <= loadedImageCount || response.images.count < Pixabay.maxImagesPerPage {
                                     observer.sendCompleted()
                                 }
