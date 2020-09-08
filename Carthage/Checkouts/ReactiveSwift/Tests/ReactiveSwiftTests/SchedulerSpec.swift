@@ -140,13 +140,7 @@ class SchedulerSpec: QuickSpec {
 		describe("QueueScheduler") {
 			it("should run enqueued actions on a global queue") {
 				var didRun = false
-
-				let scheduler: QueueScheduler
-				if #available(OSX 10.10, *) {
-					scheduler = QueueScheduler(qos: .default, name: "\(#file):\(#line)")
-				} else {
-					scheduler = QueueScheduler(queue: DispatchQueue(label: "\(#file):\(#line)"))
-				}
+				let scheduler = QueueScheduler.makeForTesting()
 
 				scheduler.schedule {
 					didRun = true
@@ -160,11 +154,7 @@ class SchedulerSpec: QuickSpec {
 				var scheduler: QueueScheduler!
 
 				beforeEach {
-					if #available(OSX 10.10, *) {
-						scheduler = QueueScheduler(qos: .default, name: "\(#file):\(#line)")
-					} else {
-						scheduler = QueueScheduler(queue: DispatchQueue(label: "\(#file):\(#line)"))
-					}
+					scheduler = QueueScheduler.makeForTesting()
 					scheduler.queue.suspend()
 				}
 
@@ -203,7 +193,7 @@ class SchedulerSpec: QuickSpec {
 					var count = 0
 					let timesToRun = 3
 
-					disposable.innerDisposable = scheduler.schedule(after: Date(), interval: 0.01, leeway: 0) {
+					disposable.inner = scheduler.schedule(after: Date(), interval: .milliseconds(10), leeway: .seconds(0)) {
 						expect(Thread.isMainThread) == false
 
 						count += 1
@@ -217,6 +207,65 @@ class SchedulerSpec: QuickSpec {
 
 					scheduler.queue.resume()
 					expect{count}.toEventually(equal(timesToRun))
+				}
+				
+				it("should repeatedly run actions after a given date when the disposable is not retained") {				
+					var count = 0
+					let timesToIncrement = 3
+					
+					// Schedule within a function so that the disposable is guaranteed to be deinitialised.
+					func scheduleAndDeinitDisposable() {
+						scheduler.schedule(after: Date(), interval: .milliseconds(10), leeway: .seconds(0)) {
+							expect(Thread.isMainThread) == false
+							
+							if count < timesToIncrement {
+								count += 1
+							}
+						}
+					}
+					
+					scheduleAndDeinitDisposable()
+					
+					expect(count) == 0
+					
+					scheduler.queue.resume()
+					expect(count).toEventually(equal(timesToIncrement), pollInterval: 0.1)
+				}
+				
+				it("should cancel repeatedly run actions on disposal") {
+					// Start two repeating timers, dispose the first, and ensure only the second runs.
+
+					let disposable1 = SerialDisposable()
+					let disposable2 = SerialDisposable()
+
+					var count = 0
+					let timesToRun = 3
+
+					let interval = DispatchTimeInterval.milliseconds(10)
+					
+					disposable1.inner = scheduler.schedule(after: Date(), interval: interval, leeway: .seconds(0)) {
+						fail("timer not cancelled on disposal")
+					}
+
+					disposable2.inner = scheduler.schedule(after: Date(), interval: interval, leeway: .seconds(0)) {
+						expect(Thread.isMainThread) == false
+						
+						count += 1
+						
+						if count == timesToRun {
+							disposable2.dispose()
+						}
+					}
+
+					disposable1.dispose()
+					
+					expect(count) == 0
+					
+					scheduler.queue.resume()
+					
+					// This expectation should take about 2.0 * interval to be fulfilled, and that's
+					// enough time to ensure that the first timer was actually cancelled.
+					expect(count).toEventually(equal(timesToRun))
 				}
 			}
 		}
@@ -259,13 +308,13 @@ class SchedulerSpec: QuickSpec {
 			it("should run actions when advanced past the target date") {
 				var string = ""
 
-				scheduler.schedule(after: 15) { [weak scheduler] in
+				scheduler.schedule(after: .seconds(15)) { [weak scheduler] in
 					string += "bar"
 					expect(Thread.isMainThread) == true
 					expect(scheduler?.currentDate).to(beCloseTo(startDate.addingTimeInterval(15), within: dateComparisonDelta))
 				}
 
-				scheduler.schedule(after: 5) { [weak scheduler] in
+				scheduler.schedule(after: .seconds(5)) { [weak scheduler] in
 					string += "foo"
 					expect(Thread.isMainThread) == true
 					expect(scheduler?.currentDate).to(beCloseTo(startDate.addingTimeInterval(5), within: dateComparisonDelta))
@@ -273,11 +322,11 @@ class SchedulerSpec: QuickSpec {
 
 				expect(string) == ""
 
-				scheduler.advance(by: 10)
+				scheduler.advance(by: .seconds(10))
 				expect(scheduler.currentDate).to(beCloseTo(startDate.addingTimeInterval(10), within: TimeInterval(dateComparisonDelta)))
 				expect(string) == "foo"
 
-				scheduler.advance(by: 10)
+				scheduler.advance(by: .seconds(10))
 				expect(scheduler.currentDate).to(beCloseTo(startDate.addingTimeInterval(20), within: dateComparisonDelta))
 				expect(string) == "foobar"
 			}
@@ -285,12 +334,12 @@ class SchedulerSpec: QuickSpec {
 			it("should run all remaining actions in order") {
 				var string = ""
 
-				scheduler.schedule(after: 15) {
+				scheduler.schedule(after: .seconds(15)) {
 					string += "bar"
 					expect(Thread.isMainThread) == true
 				}
 
-				scheduler.schedule(after: 5) {
+				scheduler.schedule(after: .seconds(5)) {
 					string += "foo"
 					expect(Thread.isMainThread) == true
 				}
@@ -303,7 +352,7 @@ class SchedulerSpec: QuickSpec {
 				expect(string) == ""
 
 				scheduler.run()
-				expect(scheduler.currentDate) == NSDate.distantFuture
+				expect(scheduler.currentDate) == Date.distantFuture
 				expect(string) == "fuzzbuzzfoobar"
 			}
 		}

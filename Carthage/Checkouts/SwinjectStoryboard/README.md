@@ -6,14 +6,14 @@ SwinjectStoryboard
 [![CocoaPods Version](https://img.shields.io/cocoapods/v/SwinjectStoryboard.svg?style=flat)](http://cocoapods.org/pods/SwinjectStoryboard)
 [![License](https://img.shields.io/cocoapods/l/SwinjectStoryboard.svg?style=flat)](http://cocoapods.org/pods/SwinjectStoryboard)
 [![Platform](https://img.shields.io/cocoapods/p/SwinjectStoryboard.svg?style=flat)](http://cocoapods.org/pods/SwinjectStoryboard)
-[![Swift Version](https://img.shields.io/badge/Swift-2.2-F16D39.svg?style=flat)](https://developer.apple.com/swift)
+[![Swift Version](https://img.shields.io/badge/Swift-3-F16D39.svg?style=flat)](https://developer.apple.com/swift)
 
 SwinjectStoryboard is an extension of Swinject to automatically inject dependency to view controllers instantiated by a storyboard.
 
 ## Requirements
 
 - iOS 8.0+ / Mac OS X 10.10+ / tvOS 9.0+
-- Xcode 7.0+
+- Xcode 8+
 
 ## Installation
 
@@ -24,8 +24,8 @@ Swinject is available through [Carthage](https://github.com/Carthage/Carthage) o
 To install Swinject with Carthage, add the following line to your `Cartfile`.
 
 ```
-github "Swinject/Swinject" "2.0.0-beta.1"
-github "Swinject/SwinjectStoryboard" "1.0.0-beta.1"
+github "Swinject/Swinject"
+github "Swinject/SwinjectStoryboard"
 ```
 
 Then run `carthage update --no-use-binaries` command or just `carthage update`. For details of the installation and usage of Carthage, visit [its project page](https://github.com/Carthage/Carthage).
@@ -39,17 +39,17 @@ source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '8.0' # or platform :osx, '10.10' if your target is OS X.
 use_frameworks!
 
-pod 'Swinject', '2.0.0-beta.1'
-pod 'SwinjectStoryboard', '1.0.0-beta.1'
+pod 'Swinject'
+pod 'SwinjectStoryboard'
 ```
 
 Then run `pod install` command. For details of the installation and usage of CocoaPods, visit [its official website](https://cocoapods.org).
 
 ## Usage
 
-Swinject supports automatic dependency injection to view controllers instantiated by `SwinjectStoryboard`. This class inherits `UIStoryboard` (or `NSStoryboard` in case of OS X). To register dependencies of a view controller, use `registerForStoryboard` method. In the same way as a registration of a service type, a view controller can be registered with or without a name.
+Swinject supports automatic dependency injection to view controllers instantiated by `SwinjectStoryboard`. This class inherits `UIStoryboard` (or `NSStoryboard` in case of OS X). To register dependencies of a view controller, use `storyboardInitCompleted` method. In the same way as a registration of a service type, a view controller can be registered with or without a name.
 
-**NOTE**: Do NOT explicitly resolve the view controllers registered by `registerForStoryboard` method. The view controllers are intended to be resolved by `SwinjectStoryboard` implicitly.
+**NOTE**: Do NOT explicitly resolve the view controllers registered by `storyboardInitCompleted` method. The view controllers are intended to be resolved by `SwinjectStoryboard` implicitly.
 
 ### Registration
 
@@ -59,10 +59,10 @@ Here is a simple example to register a dependency of a view controller without a
 
 ```swift
 let container = Container()
-container.registerForStoryboard(AnimalViewController.self) { r, c in
-    c.animal = r.resolve(AnimalType.self)
+container.storyboardInitCompleted(AnimalViewController.self) { r, c in
+    c.animal = r.resolve(Animal.self)
 }
-container.register(AnimalType.self) { _ in Cat(name: "Mimi") }
+container.register(Animal.self) { _ in Cat(name: "Mimi") }
 ```
 
 Next, we create an instance of `SwinjectStoryboard` with the container specified. If the container is not specified, `SwinjectStoryboard.defaultContainer` is used instead. `instantiateViewControllerWithIdentifier` method creates an instance of the view controller with its dependencies injected:
@@ -80,18 +80,18 @@ Where the classes and protocol are:
 
 ```swift
 class AnimalViewController: UIViewController {
-    var animal: AnimalType?
+    var animal: Animal?
 
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
 }
 
-protocol AnimalType {
+protocol Animal {
     var name: String { get set }
 }
 
-class Cat: AnimalType {
+class Cat: Animal {
     var name: String
 
     init(name: String) {
@@ -110,16 +110,16 @@ If a storyboard has more than one view controller with the same type, dependenci
 
 ```swift
 let container = Container()
-container.registerForStoryboard(AnimalViewController.self, name: "cat") {
-    r, c in c.animal = r.resolve(AnimalType.self, name: "mimi")
+container.storyboardInitCompleted(AnimalViewController.self, name: "cat") {
+    r, c in c.animal = r.resolve(Animal.self, name: "mimi")
 }
-container.registerForStoryboard(AnimalViewController.self, name: "dog") {
-    r, c in c.animal = r.resolve(AnimalType.self, name: "hachi")
+container.storyboardInitCompleted(AnimalViewController.self, name: "dog") {
+    r, c in c.animal = r.resolve(Animal.self, name: "hachi")
 }
-container.register(AnimalType.self, name: "mimi") {
+container.register(Animal.self, name: "mimi") {
     _ in Cat(name: "Mimi")
 }
-container.register(AnimalType.self, name: "hachi") {
+container.register(Animal.self, name: "hachi") {
     _ in Dog(name: "Hachi")
 }
 ```
@@ -140,7 +140,7 @@ print(dogController.animal!.name) // prints "Hachi"
 Where `Dog` class is:
 
 ```swift
-class Dog: AnimalType {
+class Dog: Animal {
     var name: String
 
     init(name: String) {
@@ -159,13 +159,15 @@ and the storyboard named `Animals.storyboard` has `AnimalViewController`s with s
 
 If you implicitly instantiate `UIWindow` and its root view controller from "Main" storyboard, implement `setup` class method as an extension of `SwinjectStoryboard` to register dependencies to `defaultContainer`. When the root view controller (initial view controller) is instantiated by runtime, dependencies registered to `defaultContainer` are injected.
 
+**Note that `@objc` attribute is mandatory here in swift 4.**
+
 ```swift
 extension SwinjectStoryboard {
-    class func setup() {
-        defaultContainer.registerForStoryboard(AnimalViewController.self) { r, c in
-            c.animal = r.resolve(AnimalType.self)
+    @objc class func setup() {
+        defaultContainer.storyboardInitCompleted(AnimalViewController.self) { r, c in
+            c.animal = r.resolve(Animal.self)
         }
-        defaultContainer.register(AnimalType.self) { _ in Cat(name: "Mimi") }
+        defaultContainer.register(Animal.self) { _ in Cat(name: "Mimi") }
     }
 }
 ```
@@ -180,17 +182,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     var container: Container = {
         let container = Container()
-        container.registerForStoryboard(AnimalViewController.self) { r, c in
-            c.animal = r.resolve(AnimalType.self)
+        container.storyboardInitCompleted(AnimalViewController.self) { r, c in
+            c.animal = r.resolve(Animal.self)
         }
-        container.register(AnimalType.self) { _ in Cat(name: "Mimi") }
+        container.register(Animal.self) { _ in Cat(name: "Mimi") }
         return container
     }()
 
     func application(
-        application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool
-    {
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
+
         let window = UIWindow(frame: UIScreen.mainScreen().bounds)
         window.makeKeyAndVisible()
         self.window = window
@@ -211,10 +213,10 @@ Storyboard Reference introduced with Xcode 7 is supported by `SwinjectStoryboard
 
 ```swift
 let container = SwinjectStoryboard.defaultContainer
-container.registerForStoryboard(AnimalViewController.self) { r, c in
-    c.animal = r.resolve(AnimalType.self)
+container.storyboardInitCompleted(AnimalViewController.self) { r, c in
+    c.animal = r.resolve(Animal.self)
 }
-container.register(AnimalType.self) { _ in Cat(name: "Mimi") }
+container.register(Animal.self) { _ in Cat(name: "Mimi") }
 ```
 
 If you implicitly instantiate `UIWindow` and its root view controller, the registrations setup for "Main" storyboard can be shared with the referenced storyboard since `defaultContainer` is configured in `setup` method.
@@ -223,7 +225,7 @@ If you implicitly instantiate `UIWindow` and its root view controller, the regis
 
 SwinjectStoryboard is inspired by:
 
-- [Typhoon](http://typhoonframework.org) - [Jasper Blues](https://github.com/jasperblues), [Aleksey Garbarev](https://github.com/alexgarbarev) and [contributors](https://github.com/appsquickly/Typhoon/graphs/contributors).
+- [Typhoon](https://github.com/appsquickly/typhoon) - [Jasper Blues](https://github.com/jasperblues), [Aleksey Garbarev](https://github.com/alexgarbarev) and [contributors](https://github.com/appsquickly/Typhoon/graphs/contributors).
 - [BlindsidedStoryboard](https://github.com/briancroom/BlindsidedStoryboard) - [Brian Croom](https://github.com/briancroom).
 
 ## License

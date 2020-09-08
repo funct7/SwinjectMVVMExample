@@ -1,35 +1,51 @@
 # reference: http://www.objc.io/issue-6/travis-ci.html
 
 language: objective-c
-osx_image: xcode8
+osx_image: xcode11
 env:
   global:
     - LC_CTYPE=en_US.UTF-8
     - LANG=en_US.UTF-8
-    - PROJECT=SwinjectStoryboard.xcodeproj
-    - IOS_SDK=iphonesimulator10.0
-    - OSX_SDK=macosx10.12
-    - TVOS_SDK=appletvsimulator10.0
-  matrix:
-## The iOS 8.1 simulator is commented out because it does not start. It looks a problem of the simulator.
-## Uncomment the following line after the simulator problem is fixed.
-#    - DESTINATION="OS=8.1,name=iPhone 4S" SCHEME="Swinject-iOS" SDK="$IOS_SDK" PLATFORM="iOS" POD_LINT="NO" ACTION="test"
-    - DESTINATION="OS=9.3,name=iPhone 6" SCHEME="Swinject-iOS" SDK="$IOS_SDK" PLATFORM="iOS" POD_LINT="NO" ACTION="test"
-    - DESTINATION="OS=10.0,name=iPhone 6S Plus" SCHEME="Swinject-iOS" SDK="$IOS_SDK" PLATFORM="iOS" POD_LINT="YES" ACTION="test"
-    - DESTINATION="arch=x86_64" SCHEME="Swinject-OSX" SDK="$OSX_SDK" PLATFORM="Mac" POD_LINT="NO" ACTION="test"
-    - DESTINATION="OS=9.2,name=Apple TV 1080p" SCHEME="Swinject-tvOS" SDK="$TVOS_SDK" PLATFORM="tvOS" POD_LINT="NO" ACTION="test"
-    - DESTINATION="OS=10.0,name=Apple TV 1080p" SCHEME="Swinject-tvOS" SDK="$TVOS_SDK" PLATFORM="tvOS" POD_LINT="NO" ACTION="test"
+    - PROJECT=SwinjectStoryboard.xcodeproj  
+matrix:
+  include:
+    - env: JOB="POD_LINT"
+      osx_image: xcode11
+      script:
+        - bundle exec pod repo update
+        - bundle exec pod lib lint
+    - env: JOB="XCODE" DEST="OS=10.3.1,name=iPhone 6" SCHEME="SwinjectStoryboard-iOS" SDK="iphonesimulator" ACTION="test"
+      osx_image: xcode11
+    - env: JOB="XCODE" DEST="OS=11.0.1,name=iPhone 7 Plus" SCHEME="SwinjectStoryboard-iOS" SDK="iphonesimulator" ACTION="test"
+      osx_image: xcode11
+    - env: JOB="XCODE" DEST="OS=11.2,name=iPhone 8 Plus" SCHEME="SwinjectStoryboard-iOS" SDK="iphonesimulator" ACTION="test"
+      osx_image: xcode11
+    - env: JOB="XCODE" DEST="OS=12.2,name=iPhone X" SCHEME="SwinjectStoryboard-iOS" SDK="iphonesimulator" ACTION="test"
+    osx_image: xcode11
+    - env: JOB="XCODE" DEST="OS=13.0,name=iPhone 11 Pro" SCHEME="SwinjectStoryboard-iOS" SDK="iphonesimulator" ACTION="test"
+      osx_image: xcode11
+    - env: JOB="XCODE" DEST="arch=x86_64" SCHEME="SwinjectStoryboard-OSX" SDK="macosx" ACTION="test"
+      osx_image: xcode11
+    - env: JOB="XCODE" DEST="arch=x86_64" SCHEME="SwinjectStoryboard-OSX" SDK="macosx" ACTION="test"
+      osx_image: xcode11
+    - env: JOB="XCODE" DEST="OS=10.2,name=Apple TV 1080p" SCHEME="SwinjectStoryboard-tvOS" SDK="appletvsimulator" ACTION="test"
+      osx_image: xcode11
+    - env: JOB="XCODE" DEST="OS=11.0,name=Apple TV 1080p" SCHEME="SwinjectStoryboard-tvOS" SDK="appletvsimulator" ACTION="test"
+      osx_image: xcode11
+    - env: JOB="XCODE" DEST="OS=13.0,name=Apple TV 4K" SCHEME="SwinjectStoryboard-tvOS" SDK="appletvsimulator" ACTION="test"
+      osx_image: xcode11
 before_install:
-  - git submodule update --recursive
+  - curl -L -O https://github.com/Carthage/Carthage/releases/download/0.33.0/Carthage.pkg
+  - sudo installer -pkg Carthage.pkg -target /
+  - rm Carthage.pkg
+  - carthage bootstrap --platform iOS,macOS,tvOS --cache-builds
 script:
   - set -o pipefail
-  - xcodebuild -version
-  - open -b com.apple.iphonesimulator # Workaround https://github.com/travis-ci/travis-ci/issues/3040
-  - xcodebuild -project "$PROJECT" -scheme "$SCHEME" -sdk "$SDK" -destination "$DESTINATION" 
-    -configuration Release ENABLE_TESTABILITY=YES ONLY_ACTIVE_ARCH=NO $ACTION
-  - if [ $POD_LINT == "YES" ]; then
-      pod lib lint --quick;
-    fi
+  - xcodebuild "$ACTION" -project "$PROJECT" -scheme "$SCHEME" -sdk "$SDK" -destination "$DEST" -configuration Release ENABLE_TESTABILITY=YES | xcpretty
 notifications:
   email:
     on_success: never
+    
+cache:
+  directories:
+    - Carthage

@@ -18,15 +18,15 @@ extension Container {
     /// - Parameters:
     ///   - controllerType: The controller type to register as a service type.
     ///                     The type is `UIViewController` in iOS, `NSViewController` or `NSWindowController` in OS X.
-    ///   - name:           A registration name, which is used to differenciate from other registrations
+    ///   - name:           A registration name, which is used to differentiate from other registrations
     ///                     that have the same view or window controller type.
-    ///   - initCompleted:  A closure to specifiy how the dependencies of the view or window controller are injected.
+    ///   - initCompleted:  A closure to specify how the dependencies of the view or window controller are injected.
     ///                     It is invoked by the `Container` when the view or window controller is instantiated by `SwinjectStoryboard`.
-    public func registerForStoryboard<C: Controller>(_ controllerType: C.Type, name: String? = nil, initCompleted: @escaping (ResolverType, C) -> ()) {
+    public func storyboardInitCompleted<C: Controller>(_ controllerType: C.Type, name: String? = nil, initCompleted: @escaping (Resolver, C) -> ()) {
         // Xcode 7.1 workaround for Issue #10. This workaround is not necessary with Xcode 7.
         // https://github.com/Swinject/Swinject/issues/10
-        let factory = { (_: ResolverType, controller: Controller) in controller }
-        let wrappingClosure: (ResolverType, Controller) -> () = { r, c in initCompleted(r, c as! C) }
+        let factory = { (_: Resolver, controller: Controller) in controller }
+        let wrappingClosure: (Resolver, Controller) -> () = { r, c in initCompleted(r, c as! C) }
         let option = SwinjectStoryboardOption(controllerType: controllerType)
         _register(Controller.self, factory: factory, name: name, option: option)
             .initCompleted(wrappingClosure)

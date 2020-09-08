@@ -21,12 +21,12 @@ class Container_SwinjectStoryboardSpec: QuickSpec {
         describe("CustomStringConvertible") {
             it("describes a registration with storyboard option.") {
                 let controllerType = String(describing: Container.Controller.self) // "UIViewController" for iOS/tvOS, "AnyObject" for OSX.
-                container.registerForStoryboard(AnimalViewController.self) { r, c in }
+                container.storyboardInitCompleted(AnimalViewController.self) { r, c in }
 
                 expect(container.description) ==
                     "[\n"
                     + "    { Service: \(controllerType), Storyboard: SwinjectStoryboardTests.AnimalViewController, "
-                    + "Factory: ((ResolverType, \(controllerType))) -> \(controllerType), ObjectScope: graph, InitCompleted: Specified }\n"
+                    + "Factory: (Resolver, \(controllerType)) -> \(controllerType), ObjectScope: graph, InitCompleted: Specified 1 closures }\n"
                     + "]"
             }
         }

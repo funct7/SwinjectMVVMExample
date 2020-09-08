@@ -1,8 +1,9 @@
-github "ReactiveCocoa/ReactiveCocoa" "5.0.0-alpha.3"
-github "ikesyo/Himotoki" ~> 3.0
-github "Alamofire/Alamofire" ~> 4.1
-github "Swinject/Swinject" "2.0.0-beta.2"
-github "Swinject/SwinjectStoryboard" "1.0.0-beta.2"
+github "ReactiveCocoa/ReactiveCocoa" "11.0.0"
+github "ikesyo/Himotoki" "4.0.0"
+github "Alamofire/Alamofire" "5.2.2"
+github "Swinject/Swinject" "2.7.1"
+github "Swinject/SwinjectStoryboard" "0ca45c83a8aa398c153d8a036c95abb4343cfa0c"
+github "antitypical/Result" "5.0.0"
 
-github "Quick/Quick" "v0.10.0"
-github "Quick/Nimble" ~> 5.1
+github "Quick/Quick" "v3.0.0"
+github "Quick/Nimble" "v8.1.2"
